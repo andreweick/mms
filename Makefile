@@ -52,11 +52,19 @@ test:
 	cd hello-world/ ; go test -v ./...
 
 sam-build:
-	sam build
+	@sam build
 
 bucket:
 	@aws s3 mb s3://$(BUCKET) \
 		--profile $(SAMPROFILE) --region $(REGION)
+
+validate:
+	@cd shuffle ; go mod verify 
+	@sam validate \
+		--template .aws-sam/build/template.yaml 
+
+package:
+	# Package is no longer used, "deploy" does both packae and upload
 
 deploy: validate bucket
 	@sam deploy \
@@ -67,10 +75,6 @@ deploy: validate bucket
 		--s3-prefix $(STACK_NAME) \
 		--no-fail-on-empty-changeset \
 		--profile $(SAMPROFILE) --region $(REGION)
-
-validate:
-	@sam validate \
-		--template .aws-sam/build/template.yaml 
 
 destroy:
 	@aws cloudformation delete-stack \

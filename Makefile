@@ -49,7 +49,7 @@ clean:
 
 test:
 	cd shuffle/ ; go test -v ./...
-	cd hello-world/ ; go test -v ./...
+#	cd hello-world/ ; go test -v ./...
 
 sam-build:
 	@sam build
@@ -66,7 +66,7 @@ validate:
 package:
 	# Package is no longer used, "deploy" does both packae and upload
 
-deploy: validate bucket
+deploy: validate bucket sam-build
 	@sam deploy \
 		--template .aws-sam/build/template.yaml \
 		--stack-name $(STACK_NAME) \

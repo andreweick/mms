@@ -32,20 +32,25 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: shuffle/
-      Handler: shuffle/
+      Handler: shuffle
       Runtime: go1.x
       Tracing: Active
+      Timeout: 300 # 10 minutes (Maximum 900 seconds)
       Events:
         S3Event:
           Type: S3
           Properties:
             Bucket: !Ref MyMediaBucket
             Events: s3:ObjectCreated:*
+      Policies:
+      - AmazonDynamoDBFullAccess
+      - AmazonS3FullAccess
+      - AmazonRekognitionFullAccess
 
-  AudioTable:
+  PhotographTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: audio
+      TableName: photograph
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: ID
@@ -61,7 +66,21 @@ Resources:
   MyMediaBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: media-source-eick-com
+      BucketName: media-input-eick-com
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  MyMediaOutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: media-output-eick-com
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:

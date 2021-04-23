@@ -17,6 +17,7 @@ type PhotoMetaData struct {
 	ID             string
 	Key            string
 	Name           string
+	ParsedName     string
 	Artist         string
 	CaptureTime    time.Time
 	Description    string

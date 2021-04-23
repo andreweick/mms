@@ -63,6 +63,23 @@ Resources:
         - AttributeName: Artist
           KeyType: RANGE
 
+    AudioTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+          TableName: audio
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: Key
+          AttributeType: S
+        - AttributeName: Artist
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Key
+          KeyType: HASH
+        - AttributeName: Artist
+          KeyType: RANGE
+
+
   MyMediaBucket:
     Type: AWS::S3::Bucket
     Properties:

@@ -19,6 +19,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 )
 
 func handler(ctx context.Context, s3Event events.S3Event) {
@@ -37,9 +38,7 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 		}
 
 		filename := path.Join(dir, s3e.Object.Key)
-		fmt.Printf("filename: %s\n", filename)
 
-		fmt.Printf("temporary directory %s\n", path.Dir(filename))
 		err = os.MkdirAll(path.Dir(filename), os.ModePerm)
 		if err != nil {
 			fmt.Printf("Cannot make directory path %s\n", dir)
@@ -47,14 +46,10 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 
 		f, err := os.Create(filename)
 
-		fmt.Printf("After create, err is %v\n", err)
-
 		if err != nil {
 			fmt.Printf("failed to create file %v, %v", f.Name(), err)
 			return
 		}
-
-		fmt.Printf("About to download bucket %v, object %v to filename %v\n", s3e.Bucket.Name, s3e.Object.Key, filename)
 
 		n, err := downloader.Download(f,
 			&s3.GetObjectInput{
@@ -67,7 +62,6 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 			return
 		}
 
-		fmt.Printf("downloaded %v bytes to %v\n", n, f.Name())
 
 		pmd := populatePMD(f.Name())
 
@@ -78,7 +72,10 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 		pmd.PerceptualHash = phash.GetHash()
 
 		pmd.ID = strconv.FormatUint(phash.GetHash(), 10)
-		pmd.Key = s3e.Object.Key
+		pmd.Key = strconv.Quote(s3e.Object.Key)
+
+		// Remove the underscores from -- sometimes Mom wrote what the scene was
+		pmd.ParsedName = strings.ReplaceAll(s3e.Object.Key,"_", " ")
 
 		downloadedImage.Close()
 
@@ -86,14 +83,12 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 
 		rkgSvc := rekognition.New(sess)
 
-		buf, err := ioutil.ReadFile(filename)
-		if err != nil {
-			fmt.Print(err)
-		}
-
 		inputRkg := &rekognition.DetectLabelsInput{
 			Image: &rekognition.Image{
-				Bytes: buf,
+				S3Object: &rekognition.S3Object{
+					Bucket: aws.String(s3e.Bucket.Name),
+					Name: aws.String(s3e.Object.Key),
+				},
 			},
 		}
 
@@ -103,10 +98,7 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 			fmt.Printf("error with DetectLabels %v\n", err)
 		}
 
-		fmt.Printf("result: %v\n", result)
-
 		for _, lab := range result.Labels {
-			fmt.Printf("label result %v\n", lab.Name)
 			l := Labels{*lab.Name, *lab.Confidence}
 			pmd.Classification.Labels = append(pmd.Classification.Labels, l)
 		}
@@ -132,7 +124,6 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 			os.Exit(1)
 		}
 
-		fmt.Println("Before defer close")
 		f.Close()
 
 		os.Remove(f.Name())

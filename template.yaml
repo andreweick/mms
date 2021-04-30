@@ -53,12 +53,12 @@ Resources:
       TableName: photograph
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: ID
+        - AttributeName: Key
           AttributeType: S
         - AttributeName: Artist
           AttributeType: S
       KeySchema:
-        - AttributeName: ID
+        - AttributeName: Key
           KeyType: HASH
         - AttributeName: Artist
           KeyType: RANGE

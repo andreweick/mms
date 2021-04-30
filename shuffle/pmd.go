@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/tiff"
+	"image"
+	_ "image/jpeg"
 	"os"
 	"time"
 )
@@ -23,6 +25,8 @@ type PhotoMetaData struct {
 	Description    string
 	Caption        string
 	PerceptualHash uint64
+	Height         int
+	Width          int
 	Classification struct {
 		Labels []Labels
 	}
@@ -81,6 +85,14 @@ func populatePMD(filepath string) *PhotoMetaData {
 	}
 
 	pmd.Description = getCleanExifValue(exifValueDescription)
+
+	image, _, err := image.DecodeConfig(fileBytes)
+	if err != nil {
+		fmt.Errorf("%v: %v\n",filepath, err)
+	}
+
+	pmd.Width = image.Width
+	pmd.Height = image.Height
 
 	return pmd
 }

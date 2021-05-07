@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/rwcarlsen/goexif/exif"
-	"github.com/rwcarlsen/goexif/tiff"
-	"image"
 	_ "image/jpeg"
 	"os"
+	"strconv"
 	"time"
+
+	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/tiff"
 )
 
 type Labels struct {
@@ -16,8 +17,6 @@ type Labels struct {
 }
 
 type PhotoMetaData struct {
-	ID             string
-	Key            string
 	Name           string
 	ParsedName     string
 	Artist         string
@@ -58,7 +57,7 @@ func populatePMD(filepath string) *PhotoMetaData {
 	x, err := exif.Decode(fileBytes)
 
 	if err != nil {
-		fmt.Errorf("should not get an error")
+		fmt.Print("should not get an error")
 	}
 
 	var pmd *PhotoMetaData
@@ -67,7 +66,7 @@ func populatePMD(filepath string) *PhotoMetaData {
 	exifValueArtist, err := x.Get(exif.Artist)
 
 	if err != nil {
-		fmt.Errorf("error decoding the Artist")
+		fmt.Print("error decoding the Artist")
 	}
 
 	pmd.Artist = getCleanExifValue(exifValueArtist)
@@ -75,24 +74,28 @@ func populatePMD(filepath string) *PhotoMetaData {
 	pmd.CaptureTime, err = x.DateTime()
 
 	if err != nil {
-		fmt.Errorf("error decodeing the time")
+		fmt.Print("error decodeing the time")
 	}
 
 	exifValueDescription, err := x.Get(exif.ImageDescription)
 
 	if err != nil {
-		fmt.Errorf("error decoding the description")
+		fmt.Print("error decoding the description")
 	}
 
 	pmd.Description = getCleanExifValue(exifValueDescription)
 
-	image, _, err := image.DecodeConfig(fileBytes)
+	exifVaultWidth, err := x.Get(exif.ImageWidth)
 	if err != nil {
-		fmt.Errorf("%v: %v\n",filepath, err)
+		fmt.Print("error decoding the width")
 	}
+	pmd.Width, _ = strconv.Atoi(getCleanExifValue(exifVaultWidth))
 
-	pmd.Width = image.Width
-	pmd.Height = image.Height
+	exifVaultLength, err := x.Get(exif.ImageLength) // Image height called
+	if err != nil {
+		fmt.Print("error decoding the length (Height")
+	}
+	pmd.Height, _ = strconv.Atoi(getCleanExifValue(exifVaultLength))
 
 	return pmd
 }

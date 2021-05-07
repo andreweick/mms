@@ -49,7 +49,7 @@ clean:
 
 test:
 	cd shuffle/ ; go test -v ./...
-#	cd hello-world/ ; go test -v ./...
+	cd hello-world/ ; go test -v ./...
 
 sam-build:
 	@sam build
@@ -64,7 +64,7 @@ validate:
 		--template .aws-sam/build/template.yaml 
 
 package:
-	# Package is no longer used, "deploy" does both packae and upload
+	# Package is no longer used, "deploy" does both package and upload
 
 deploy: validate bucket sam-build
 	@sam deploy \
@@ -77,6 +77,10 @@ deploy: validate bucket sam-build
 		--profile $(SAMPROFILE) --region $(REGION)
 
 destroy:
+	@aws s3 rm s3://media-input-eick-com --recursive \
+		--profile $(SAMPROFILE) --region $(REGION)
+	@aws s3 rm s3://media-output-eick-com --recursive \
+		--profile $(SAMPROFILE) --region $(REGION)
 	@aws cloudformation delete-stack \
 		--stack-name $(STACK_NAME) \
 		--profile $(SAMPROFILE) --region $(REGION)

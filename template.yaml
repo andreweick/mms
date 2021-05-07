@@ -22,7 +22,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /hello
+            Path: /get
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
@@ -43,9 +43,9 @@ Resources:
             Bucket: !Ref MyMediaBucket
             Events: s3:ObjectCreated:*
       Policies:
-      - AmazonDynamoDBFullAccess
-      - AmazonS3FullAccess
-      - AmazonRekognitionFullAccess
+        - AmazonDynamoDBFullAccess
+        - AmazonS3FullAccess
+        - AmazonRekognitionFullAccess
 
   PhotographTable:
     Type: AWS::DynamoDB::Table
@@ -53,32 +53,28 @@ Resources:
       TableName: photograph
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: Key
+        - AttributeName: Name
           AttributeType: S
-        - AttributeName: Artist
+        # - AttributeName: ID
+        #   AttributeType: S
+        - AttributeName: CaptureTime
           AttributeType: S
+
       KeySchema:
-        - AttributeName: Key
+        - AttributeName: Name
           KeyType: HASH
-        - AttributeName: Artist
+        - AttributeName: CaptureTime
           KeyType: RANGE
 
-    AudioTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-          TableName: audio
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: Key
-          AttributeType: S
-        - AttributeName: Artist
-          AttributeType: S
-      KeySchema:
-        - AttributeName: Key
-          KeyType: HASH
-        - AttributeName: Artist
-          KeyType: RANGE
-
+      GlobalSecondaryIndexes:
+        - IndexName: CaptureTimeIndex
+          KeySchema:
+            - AttributeName: CaptureTime
+              KeyType: HASH
+            - AttributeName: Name
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   MyMediaBucket:
     Type: AWS::S3::Bucket

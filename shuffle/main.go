@@ -3,6 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"image/jpeg"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
@@ -13,20 +20,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/corona10/goimagehash"
-	"image/jpeg"
-	"io/ioutil"
-	"log"
-	"os"
-	"path"
-	"strconv"
-	"strings"
 )
 
-func processAudio(s3e events.S3Entity){
-	
+func processAudio(s3e events.S3Entity) {
+
 }
 
-func processPhoto(s3e events.S3Entity){
+func processPhoto(s3e events.S3Entity) {
 	sess := session.Must(session.NewSession())
 
 	// download file from s3
@@ -62,7 +62,6 @@ func processPhoto(s3e events.S3Entity){
 		return
 	}
 
-
 	pmd := populatePMD(f.Name())
 
 	// Create ImageHash
@@ -71,11 +70,12 @@ func processPhoto(s3e events.S3Entity){
 	phash, _ := goimagehash.PerceptionHash(img1)
 	pmd.PerceptualHash = phash.GetHash()
 
-	pmd.ID = strconv.FormatUint(phash.GetHash(), 10)
-	pmd.Key = strconv.Quote(s3e.Object.Key)
+	// pmd.ID = strconv.FormatUint(phash.GetHash(), 10)
+	// pmd.Key = s3e.Object.Key
+	pmd.Name = s3e.Object.Key
 
 	// Remove the underscores from -- sometimes Mom wrote what the scene was
-	pmd.ParsedName = strings.ReplaceAll(s3e.Object.Key,"_", " ")
+	pmd.ParsedName = strings.ReplaceAll(s3e.Object.Key, "_", " ")
 
 	downloadedImage.Close()
 
@@ -87,7 +87,7 @@ func processPhoto(s3e events.S3Entity){
 		Image: &rekognition.Image{
 			S3Object: &rekognition.S3Object{
 				Bucket: aws.String(s3e.Bucket.Name),
-				Name: aws.String(s3e.Object.Key),
+				Name:   aws.String(s3e.Object.Key),
 			},
 		},
 	}
@@ -133,10 +133,10 @@ func handler(ctx context.Context, s3Event events.S3Event) {
 	for _, record := range s3Event.Records {
 		s3e := record.S3
 		fmt.Printf("[%s - %s] Bucket = %s, Key = %s \n", record.EventSource, record.EventTime, s3e.Bucket.Name, s3e.Object.Key)
-		if strings.HasSuffix(s3e.Object.Key, ".jpg"){
+		if strings.HasSuffix(s3e.Object.Key, ".jpg") {
 			processPhoto(s3e)
 		}
-		if strings.HasSuffix(s3e.Object.Key, ".wav"){
+		if strings.HasSuffix(s3e.Object.Key, ".wav") {
 			processAudio(s3e)
 		}
 	}

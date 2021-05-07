@@ -85,16 +85,10 @@ func populatePMD(filepath string) *PhotoMetaData {
 
 	pmd.Description = getCleanExifValue(exifValueDescription)
 
-	exifVaultWidth, err := x.Get(exif.ImageWidth)
-	if err != nil {
-		fmt.Print("error decoding the width")
-	}
+	exifVaultWidth, _ := x.Get(exif.ImageWidth)
 	pmd.Width, _ = strconv.Atoi(getCleanExifValue(exifVaultWidth))
 
-	exifVaultLength, err := x.Get(exif.ImageLength) // Image height called
-	if err != nil {
-		fmt.Print("error decoding the length (Height")
-	}
+	exifVaultLength, _ := x.Get(exif.ImageLength) // Image height called
 	pmd.Height, _ = strconv.Atoi(getCleanExifValue(exifVaultLength))
 
 	return pmd

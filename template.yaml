@@ -22,11 +22,14 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /photoapi
+            Path: /photoapi/{list}
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonS3FullAccess
 
   ShuffleFunction:
     Type: AWS::Serverless::Function
@@ -55,24 +58,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: Name
           AttributeType: S
-        # - AttributeName: ID
-        #   AttributeType: S
         - AttributeName: CaptureTime
           AttributeType: S
 
       KeySchema:
         - AttributeName: Name
           KeyType: HASH
-        - AttributeName: CaptureTime
-          KeyType: RANGE
+        # - AttributeName: CaptureTime
+        #   KeyType: RANGE
 
       GlobalSecondaryIndexes:
         - IndexName: CaptureTimeIndex
           KeySchema:
             - AttributeName: CaptureTime
               KeyType: HASH
-            - AttributeName: Name
-              KeyType: RANGE
+            # - AttributeName: Name
+            #   KeyType: RANGE
           Projection:
             ProjectionType: ALL
 

@@ -68,7 +68,7 @@ func processPhoto(s3e events.S3Entity) {
 	downloadedImage, _ := os.Open(filename)
 	img1, _ := jpeg.Decode(downloadedImage)
 	phash, _ := goimagehash.PerceptionHash(img1)
-	pmd.PerceptualHash = phash.GetHash()
+	pmd.ID = phash.GetHash()
 
 	// pmd.ID = strconv.FormatUint(phash.GetHash(), 10)
 	// pmd.Key = s3e.Object.Key

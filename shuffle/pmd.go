@@ -23,7 +23,7 @@ type PhotoMetaData struct {
 	CaptureTime    time.Time
 	Description    string
 	Caption        string
-	PerceptualHash uint64
+	ID             uint64
 	Height         int
 	Width          int
 	Classification struct {

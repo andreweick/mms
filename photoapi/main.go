@@ -35,16 +35,18 @@ type Labels struct {
 }
 
 type PhotoMetaData struct {
-	Name           string
-	ParsedName     string
-	Artist         string
-	CaptureTime    time.Time
-	Description    string
-	Caption        string
-	ID             uint64
-	Height         int
-	Width          int
-	Classification struct {
+	Name             string
+	ParsedName       string
+	Artist           string
+	CaptureTime      time.Time
+	CaptureYear      string
+	CaptureYearMonth string
+	Description      string
+	Caption          string
+	ID               uint64
+	Height           int
+	Width            int
+	Classification   struct {
 		Labels []Labels
 	}
 }
@@ -132,7 +134,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	total := 0
 	for _, key := range resp.Contents {
 		total++
-		log.Printf("key: %s", key.Key)
+		log.Printf("key: %v", key.Key)
 	}
 
 	log.Printf("total keys: %v", total)

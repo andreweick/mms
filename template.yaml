@@ -60,22 +60,51 @@ Resources:
           AttributeType: S
         - AttributeName: CaptureTime
           AttributeType: S
+        - AttributeName: CaptureYear
+          AttributeType: S
+        - AttributeName: CaptureYearMonth
+          AttributeType: S
+        - AttributeName: CaptureYearMonthDay
+          AttributeType: S
 
       KeySchema:
         - AttributeName: Name
           KeyType: HASH
-        # - AttributeName: CaptureTime
-        #   KeyType: RANGE
 
       GlobalSecondaryIndexes:
         - IndexName: CaptureTimeIndex
           KeySchema:
             - AttributeName: CaptureTime
               KeyType: HASH
-            # - AttributeName: Name
-            #   KeyType: RANGE
           Projection:
             ProjectionType: ALL
+
+        - IndexName: CaptureYearIndex
+          KeySchema:
+            - AttriuteName: CaptureYear
+              KeyType: HASH
+            - AttriuteName: CaptureTime
+              KeyType: SORT
+          Projection:
+            ProjectionType: All
+
+        - IndexName: CaptureYearMonthIndex
+          KeySchema:
+            - AttriuteName: CaptureYearMonth
+              KeyType: HASH
+            - AttriuteName: CaptureTime
+              KeyType: SORT
+          Projection:
+            ProjectionType: All
+
+        - IndexName: CaptureYearMonthDayIndex
+          KeySchema:
+            - AttriuteName: CaptureYearMonthDay
+              KeyType: HASH
+            - AttriuteName: CaptureTime
+              KeyType: SORT
+          Projection:
+            ProjectionType: All
 
   MyMediaBucket:
     Type: AWS::S3::Bucket

@@ -11,6 +11,17 @@ Globals:
     Timeout: 5
 
 Resources:
+  ApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: api.eick.com
+      ValidationMethod: DNS
+
+  # MyPhotoApi:
+  #   Type: AWS::Serverless::Api
+  #   Properties:
+  #     StageName: Prod
+
   PhotoApiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -22,6 +33,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            # RestApiId: !Ref MyPhotoApi
             Path: /photoapi/{list}
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
@@ -81,30 +93,30 @@ Resources:
 
         - IndexName: CaptureYearIndex
           KeySchema:
-            - AttriuteName: CaptureYear
+            - AttributeName: CaptureYear
               KeyType: HASH
-            - AttriuteName: CaptureTime
-              KeyType: SORT
+            - AttributeName: CaptureTime
+              KeyType: RANGE
           Projection:
-            ProjectionType: All
+            ProjectionType: ALL
 
         - IndexName: CaptureYearMonthIndex
           KeySchema:
-            - AttriuteName: CaptureYearMonth
+            - AttributeName: CaptureYearMonth
               KeyType: HASH
-            - AttriuteName: CaptureTime
-              KeyType: SORT
+            - AttributeName: CaptureTime
+              KeyType: RANGE
           Projection:
-            ProjectionType: All
+            ProjectionType: ALL
 
         - IndexName: CaptureYearMonthDayIndex
           KeySchema:
-            - AttriuteName: CaptureYearMonthDay
+            - AttributeName: CaptureYearMonthDay
               KeyType: HASH
-            - AttriuteName: CaptureTime
-              KeyType: SORT
+            - AttributeName: CaptureTime
+              KeyType: RANGE
           Projection:
-            ProjectionType: All
+            ProjectionType: ALL
 
   MyMediaBucket:
     Type: AWS::S3::Bucket
@@ -124,6 +136,20 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: media-output-eick-com
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  MyPhotosBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: photos-eick-com
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:

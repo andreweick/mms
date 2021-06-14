@@ -17,16 +17,19 @@ type Labels struct {
 }
 
 type PhotoMetaData struct {
-	Name           string
-	ParsedName     string
-	Artist         string
-	CaptureTime    time.Time
-	Description    string
-	Caption        string
-	ID             uint64
-	Height         int
-	Width          int
-	Classification struct {
+	Name                string
+	ParsedName          string
+	Artist              string
+	CaptureTime         time.Time
+	CaptureYear         string
+	CaptureYearMonth    string
+	CaptureYearMonthDay string
+	Description         string
+	Caption             string
+	ID                  uint64
+	Height              int
+	Width               int
+	Classification      struct {
 		Labels []Labels
 	}
 }
@@ -60,8 +63,7 @@ func populatePMD(filepath string) *PhotoMetaData {
 		fmt.Print("should not get an error")
 	}
 
-	var pmd *PhotoMetaData
-	pmd = new(PhotoMetaData)
+	var pmd *PhotoMetaData = new(PhotoMetaData)
 
 	exifValueArtist, err := x.Get(exif.Artist)
 
@@ -76,6 +78,17 @@ func populatePMD(filepath string) *PhotoMetaData {
 	if err != nil {
 		fmt.Print("error decodeing the time")
 	}
+
+	// `Format` and `Parse` use example-based layouts. Usually
+	// you'll use a constant from `time` for these layouts, but
+	// you can also supply custom layouts. Layouts must use the
+	// reference time `Mon Jan 2 15:04:05 MST 2006` to show the
+	// pattern with which to format/parse a given time/string.
+	// The example time must be exactly as shown: the year 2006,
+	// 15 for the hour, Monday for the day of the week, etc.
+	pmd.CaptureYear = pmd.CaptureTime.Format("2006")
+	pmd.CaptureYearMonth = pmd.CaptureTime.Format("2006-01")
+	pmd.CaptureYearMonthDay = pmd.CaptureTime.Format("2006-01-02")
 
 	exifValueDescription, err := x.Get(exif.ImageDescription)
 

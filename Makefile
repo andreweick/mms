@@ -81,6 +81,8 @@ destroy:
 		--profile $(SAMPROFILE) --region $(REGION)
 	@aws s3 rm s3://media-output-eick-com --recursive \
 		--profile $(SAMPROFILE) --region $(REGION)
+	@aws s3 rm s3://photos-eick-com --recursive \
+		--profile $(SAMPROFILE) --region $(REGION)
 	@aws cloudformation delete-stack \
 		--stack-name $(STACK_NAME) \
 		--profile $(SAMPROFILE) --region $(REGION)

@@ -35,18 +35,19 @@ type Labels struct {
 }
 
 type PhotoMetaData struct {
-	Name             string
-	ParsedName       string
-	Artist           string
-	CaptureTime      time.Time
-	CaptureYear      string
-	CaptureYearMonth string
-	Description      string
-	Caption          string
-	ID               uint64
-	Height           int
-	Width            int
-	Classification   struct {
+	Name                string
+	ParsedName          string
+	Artist              string
+	CaptureTime         time.Time
+	CaptureYear         string
+	CaptureYearMonth    string
+	CaptureYearMonthDay string
+	Description         string
+	Caption             string
+	ID                  uint64
+	Height              int
+	Width               int
+	Classification      struct {
 		Labels []Labels
 	}
 }

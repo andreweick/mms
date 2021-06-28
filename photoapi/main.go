@@ -15,7 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 var (
@@ -55,6 +54,7 @@ type PhotoMetaData struct {
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	sess := session.Must(session.NewSession())
 
+	// #curl https://lvn6inhvm9.execute-api.us-east-1.amazonaws.com/Prod/photoapi/\?hello
 	_, found := request.QueryStringParameters["hello"]
 
 	if found {
@@ -122,26 +122,68 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
-	svc := s3.New(sess)
+	nextToken, found := request.QueryStringParameters["NextToken"]
 
-	resp, err := svc.ListObjects(&s3.ListObjectsInput{
-		Bucket: aws.String("photos-source-eick-com"),
-	})
+	if found {
+		// AWS command to run
+		// aws dynamodb scan --table-name photograph --projection-expression "#c" --expression-attribute-names '{"#c":"Name"}'  --max-items 5 --profile edc-sam --region us-east-1
+		//
 
-	if err != nil {
-		log.Fatalln(err.Error())
+		svc := dynamodb.New(sess)
+
+		tableName := "photograph" // photoCaptureTime := "1972-12-31T15:50:09Z"
+
+		si := &dynamodb.ScanInput{
+			TableName: aws.String(tableName),
+			// Limit:                aws.Int64(3),
+			ProjectionExpression: aws.String("#PN"),
+			ExpressionAttributeNames: map[string]*string{
+				"#PN": aws.String("Name"),
+			},
+		}
+
+		if nextToken != "0" {
+			si.ExclusiveStartKey = map[string]*dynamodb.AttributeValue{
+				"Name": {
+					S: aws.String(nextToken),
+				},
+			}
+		}
+
+		scan, err := svc.Scan(si)
+
+		if err != nil {
+			log.Fatalf("Got error calling GetItem: %s", err)
+		}
+
+		type PhotoList struct {
+			Name      []string
+			NextToken string
+		}
+
+		var ppl *PhotoList = new(PhotoList)
+
+		for _, v := range scan.Items {
+			ppl.Name = append(ppl.Name, *v["Name"].S)
+		}
+
+		if scan.LastEvaluatedKey != nil {
+			scan.Items = append(scan.Items, scan.LastEvaluatedKey)
+			ppl.NextToken = *scan.LastEvaluatedKey["Name"].S
+		}
+
+		jsonString, err := json.Marshal(ppl)
+		if err != nil {
+			log.Fatalf("Error marshaling string %v", err)
+		}
+		return events.APIGatewayProxyResponse{
+			Body:       string(jsonString),
+			StatusCode: 200,
+		}, nil
 	}
-
-	total := 0
-	for _, key := range resp.Contents {
-		total++
-		log.Printf("key: %v", key.Key)
-	}
-
-	log.Printf("total keys: %v", total)
 
 	return events.APIGatewayProxyResponse{
-		Body:       string(fmt.Sprintf("total keys: %v", total)),
+		Body:       string(fmt.Sprintf("total keys: %v", 100)),
 		StatusCode: 200,
 	}, nil
 }

@@ -11,16 +11,24 @@ Globals:
     Timeout: 5
 
 Resources:
-  ApiCertificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: api.eick.com
-      ValidationMethod: DNS
+  # ApiCertificate:
+  #   Type: AWS::CertificateManager::Certificate
+  #   Properties:
+  #     DomainName: api.eick.com
+  #     ValidationMethod: DNS
 
   # MyPhotoApi:
   #   Type: AWS::Serverless::Api
   #   Properties:
   #     StageName: Prod
+  #     Domain:
+  #       DomainName: api.eick.com
+  #       CertificateArn: !Ref ApiCertificate
+  #       Route53:
+  #         HostedZoneId: Z2GDZCNT8N54HR
+  #       BasePath:
+  #         Path: /photoapi/
+  #         Method: GET
 
   PhotoApiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -34,7 +42,8 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             # RestApiId: !Ref MyPhotoApi
-            Path: /photoapi/{list}
+            # Path: /photoapi/{list}
+            Path: /photoapi/
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
